@@ -1,0 +1,5 @@
+streamlit
+folium
+pandas
+numpy
+# Add other dependencies as needed
