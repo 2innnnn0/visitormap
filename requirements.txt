@@ -1,5 +1,5 @@
 streamlit
 folium
+streamlit_folium
 pandas
 numpy
-# Add other dependencies as needed
