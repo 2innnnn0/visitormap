@@ -3,7 +3,6 @@ import folium
 from streamlit_folium import folium_static
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
-import io
 
 def get_exif_data(image):
     exif_data = {}
@@ -22,16 +21,24 @@ def get_exif_data(image):
     return exif_data
 
 def get_decimal_coordinates(info):
-    for key in ['Latitude', 'Longitude']:
-        if 'GPS' + key in info and 'GPS' + key + 'Ref' in info:
-            e = info['GPS' + key]
-            ref = info['GPS' + key + 'Ref']
-            info[key] = (e[0][0] / e[0][1] +
-                         e[1][0] / e[1][1] / 60 +
-                         e[2][0] / e[2][1] / 3600) * (-1 if ref in ['S', 'W'] else 1)
+    def convert_to_degrees(value):
+        d = value[0][0] / value[0][1]
+        m = value[1][0] / value[1][1] / 60.0
+        s = value[2][0] / value[2][1] / 3600.0
+        return d + m + s
 
-    if 'Latitude' in info and 'Longitude' in info:
-        return [info['Latitude'], info['Longitude']]
+    lat = lon = None
+    if "GPSLatitude" in info and "GPSLatitudeRef" in info:
+        lat = convert_to_degrees(info["GPSLatitude"])
+        if info["GPSLatitudeRef"] != "N":
+            lat = -lat
+
+    if "GPSLongitude" in info and "GPSLongitudeRef" in info:
+        lon = convert_to_degrees(info["GPSLongitude"])
+        if info["GPSLongitudeRef"] != "E":
+            lon = -lon
+
+    return (lat, lon) if lat and lon else None
 
 st.title('Photo Location Visualizer')
 
